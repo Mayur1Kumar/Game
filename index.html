@@ -1,556 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>Brick Breaker Game</title>
-<script async src="https://jiogames.akamaized.net/gameSDK/jiogames/stable/v2.0/jiogames_sdk.js" data-jg-test-environment="on"></script>
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #000;
-    font-family: "Comic Sans MS", cursive, sans-serif;
-    height: 100%;
-    overflow: hidden;
-    color: #fff;
-  }
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  canvas {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid black;
-    border-radius: 15px;
-    box-shadow: 0 0 100px white;
-    display: block;
-    max-width: 100vw;
-    max-height: 80vh;
-  }
-  .home-screen,
-  .instruction-screen,
-  .game-over-screen {
-    position: fixed;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: black;
-    padding: 40px 60px;
-    border-radius: 20px;
-    box-shadow: 0 0 100px black;
-    width: 90%;
-    max-width: 800px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-  }
-  .home-screen h1 {
-    font-size: 10vw;
-    max-font-size: 80px;
-    margin-bottom: 40px;
-  }
-  .instruction-screen h1,
-  .game-over-screen h1 {
-    font-size: 8vw;
-    max-font-size: 60px;
-    margin-bottom: 40px;
-  }
-  .home-screen button,
-  .instruction-screen button,
-  .game-over-screen button {
-    font-size: 4vw;
-    max-font-size: 22px;
-    padding: 12px 28px;
-    margin-top: 20px;
-    background-color: #000;
-    border: none;
-    border-radius: 10px;
-    color: #fff;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
-    transition: background-color 0.3s ease, transform 0.2s ease;
-  }
-  .home-screen button:hover,
-  .instruction-screen button:hover,
-  .game-over-screen button:hover {
-    background-color: #333;
-    transform: scale(1.05);
-  }
-  .instruction-screen p {
-    font-size: 3vw;
-    max-font-size: 20px;
-    margin: 10px 0;
-    line-height: 1.5;
-    max-width: 600px;
-  }
-  .neon-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(-45deg, #ff66b3, #66ffcc, #cc66ff, #66ff80);
-    background-size: 400% 400%;
-    animation: neonBackground 5s ease infinite;
-    z-index: -1;
-  }
-  @keyframes neonBackground {
-    0% {
-      background-position: 0% 50%;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Responsive Brick Breaker</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #222;
     }
-    50% {
-      background-position: 100% 50%;
+
+    canvas {
+      display: block;
+      background: #111;
     }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-</style>
+  </style>
 </head>
 <body>
-  <div class="neon-background"></div>
-  <canvas id="gameCanvas"></canvas>
+<canvas id="gameCanvas"></canvas>
 
-  <!-- Screens -->
-  <div id="homeScreen" class="home-screen">
-    <h1>Brick Breaker</h1>
-    <button onclick="showInstructionScreen()">START</button>
-  </div>
-  <div id="instructionScreen" class="instruction-screen" style="display: none;">
-    <h1>How to Play</h1>
-    <p>Use the LEFT and RIGHT arrow keys to move the paddle.</p>
-    <p>Press DOWN arrow key to Pause</p>
-    <p>Press ENTER to start the game</p>
-    <button onclick="startGame()">PLAY GAME</button>
-  </div>
-  <div id="gameOverScreen" class="game-over-screen" style="display: none;">
-    <h1>Game Over</h1>
-    <button onclick="goToHome()">HOME</button>
-  </div>
-  <div id="rewardedScreen" class="game-over-screen" style="display: none;">
-    <h1>Watch Ad to Continue?</h1>
-    <h2>You can get 1 extra life!</h2>
-    <h2 id="countdownTimer">5</h2>
-    <button onclick="RewardMJ()">Yes</button>
-  </div>
-  <div id="gameCompleteScreen" class="game-over-screen" style="display: none;">
-    <h1>Congratulations!</h1>
-    <h2>You won the game!</h2>
-    <button onclick="goToHome()">HOME</button>
-  </div>
+<script>
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
 
-  <!-- Audio -->
-  <audio id="gameMusic" loop>
-    <source src="sound.mp3" type="audio/mp3" />
-  </audio>
+  let width, height;
+  let paddle, ball, bricks, rows = 5, cols = 8;
+  let paddleWidthRatio = 0.2;
+  let keys = { left: false, right: false };
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+  function resizeCanvas() {
+    width = window.innerWidth;
+    height = window.innerHeight;
 
-    let ballRadius;
-    let x, y, dx, dy;
-    let paddleHeight;
-    let paddleWidth;
-    let paddleX;
-    let rightPressed = false;
-    let leftPressed = false;
-    let brickRowCount = 5;
-    let brickColumnCount = 8;
-    let brickWidth;
-    let brickHeight;
-    let brickPadding;
-    let brickOffsetTop;
-    let brickOffsetLeft;
-    let bricks = [];
-    let score;
-    let lives;
-    let paused = false;
-    let trail = [];
-    const maxTrailLength = 15;
-    let rewardUsed = false;
-    let countdownInterval;
-    let animationFrameId;
+    // Force landscape orientation
+    if (height > width) [width, height] = [height, width];
 
-    const heartImg = new Image();
-    heartImg.src = "heart.png";
+    canvas.width = width;
+    canvas.height = height;
 
-    const gameMusic = document.getElementById("gameMusic");
+    setupGame();
+  }
 
-    // Initialize sizes based on canvas size
-    function resizeCanvas() {
-      // Set canvas size relative to window
-      const maxWidth = window.innerWidth * 0.95;
-      const maxHeight = window.innerHeight * 0.8;
-
-      // Keep aspect ratio approx 13:6 (like original 1300x600)
-      let width = maxWidth;
-      let height = width * 6 / 13;
-
-      if (height > maxHeight) {
-        height = maxHeight;
-        width = height * 13 / 6;
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-
-      // Dimensions relative to canvas size
-      ballRadius = Math.max(8, width * 0.0075); // ~10 on 1300 width
-      paddleHeight = Math.max(8, height * 0.017); // ~10 on 600 height
-      paddleWidth = Math.max(100, width * 0.115); // ~150 on 1300 width
-      brickPadding = Math.max(6, width * 0.007); // ~10 on 1300 width
-      brickHeight = Math.max(20, height * 0.04); // ~25 on 600 height
-      brickWidth = (width - 80) / brickColumnCount; // minor tweak to offset later
-      brickOffsetTop = height * 0.08; // ~50 on 600 height
-
-      const totalBrickWidth = brickWidth * brickColumnCount + brickPadding * (brickColumnCount - 1);
-      brickOffsetLeft = (width - totalBrickWidth) / 2;
-
-      // Reset paddleX to center horizontally
-      paddleX = (canvas.width - paddleWidth) / 2;
-    }
-
-    function initBricks() {
-      bricks = Array.from({ length: brickColumnCount }, () =>
-        Array.from({ length: brickRowCount }, () => ({
-          x: 0,
-          y: 0,
-          status: 1,
-        }))
-      );
-    }
-
-    document.addEventListener("keydown", keyDownHandler);
-    document.addEventListener("keyup", keyUpHandler);
-
-    function keyDownHandler(e) {
-      const isGameplayScreen = canvas.style.display === "block" && document.getElementById("rewardedScreen").style.display === "none";
-      const homeVisible = document.getElementById("homeScreen").style.display === "flex";
-      const instructionVisible = document.getElementById("instructionScreen").style.display === "flex";
-      const gameOverVisible = document.getElementById("gameOverScreen").style.display === "flex";
-      const gameCompleteVisible = document.getElementById("gameCompleteScreen").style.display === "flex";
-      const rewardedVisible = document.getElementById("rewardedScreen").style.display === "flex";
-
-      if (e.key === "Enter" || e.keyCode === 13) {
-        if (homeVisible) showInstructionScreen();
-        else if (instructionVisible) startGame();
-        else if (gameOverVisible || gameCompleteVisible) goToHome();
-        else if (rewardedVisible) RewardMJ();
-      }
-
-      if (isGameplayScreen && (e.key === "1" || e.keyCode === 49)) {
-        score = brickRowCount * brickColumnCount;
-        showGameCompleteScreen();
-        return;
-      }
-
-      if (isGameplayScreen) {
-        if (e.key === "Right" || e.key === "ArrowRight" || e.keyCode === 39)
-          rightPressed = true;
-        else if (e.key === "Left" || e.key === "ArrowLeft" || e.keyCode === 37)
-          leftPressed = true;
-        else if (e.key === "ArrowDown" || e.keyCode === 40) paused = !paused;
-      }
-
-      e.preventDefault();
-    }
-
-    function keyUpHandler(e) {
-      if (canvas.style.display === "block") {
-        if (e.key === "Right" || e.key === "ArrowRight") rightPressed = false;
-        else if (e.key === "Left" || e.key === "ArrowLeft") leftPressed = false;
-      }
-      e.preventDefault();
-    }
-
-    function drawBall() {
-      trail.unshift({ x, y });
-      if (trail.length > maxTrailLength) trail.pop();
-      for (let i = 0; i < trail.length; i++) {
-        const point = trail[i];
-        const opacity = 1 - i / maxTrailLength;
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, ballRadius - 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.shadowColor = "white";
-        ctx.shadowBlur = 10 * opacity;
-        ctx.fill();
-        ctx.closePath();
-      }
-      ctx.beginPath();
-      ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-      ctx.fillStyle = "white";
-      ctx.shadowColor = "white";
-      ctx.shadowBlur = 15;
-      ctx.fill();
-      ctx.closePath();
-    }
-
-    function drawPaddle() {
-      ctx.beginPath();
-      ctx.rect(paddleX, canvas.height - paddleHeight * 2, paddleWidth, paddleHeight);
-      ctx.fillStyle = "#fff";
-      ctx.shadowColor = "white";
-      ctx.shadowBlur = 40;
-      ctx.fill();
-      ctx.closePath();
-    }
-
-    function drawBricks() {
-      for (let c = 0; c < brickColumnCount; c++) {
-        for (let r = 0; r < brickRowCount; r++) {
-          if (bricks[c][r].status === 1) {
-            const brickX = brickOffsetLeft + c * (brickWidth + brickPadding);
-            const brickY = brickOffsetTop + r * (brickHeight + brickPadding);
-            bricks[c][r].x = brickX;
-            bricks[c][r].y = brickY;
-
-            const hue = (r * 60) % 360;
-            ctx.fillStyle = `hsl(${hue}, 100%, 60%)`;
-            ctx.shadowColor = `hsl(${hue}, 100%, 70%)`;
-            ctx.shadowBlur = 20;
-            ctx.fillRect(brickX, brickY, brickWidth, brickHeight);
-
-            // Add a white glow outline
-            ctx.strokeStyle = "white";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(brickX, brickY, brickWidth, brickHeight);
-          }
-        }
-      }
-    }
-
-    function drawScore() {
-      ctx.font = `bold ${Math.max(16, canvas.height * 0.035)}px "Comic Sans MS", cursive, sans-serif`;
-      ctx.fillStyle = "white";
-      ctx.shadowColor = "white";
-      ctx.shadowBlur = 15;
-      ctx.fillText("Score: " + score, 20, canvas.height * 0.04);
-    }
-
-    function drawLives() {
-      const heartSize = paddleHeight * 1.4;
-      const startX = canvas.width - (heartSize + 10) * lives - 10;
-      const yPos = canvas.height * 0.035;
-      for (let i = 0; i < lives; i++) {
-        ctx.drawImage(heartImg, startX + i * (heartSize + 10), yPos - heartSize * 0.7, heartSize, heartSize);
-      }
-    }
-
-    function collisionDetection() {
-      for (let c = 0; c < brickColumnCount; c++) {
-        for (let r = 0; r < brickRowCount; r++) {
-          const b = bricks[c][r];
-          if (b.status === 1) {
-            if (
-              x > b.x &&
-              x < b.x + brickWidth &&
-              y > b.y &&
-              y < b.y + brickHeight
-            ) {
-              dy = -dy;
-              b.status = 0;
-              score++;
-              if (score === brickRowCount * brickColumnCount) {
-                showGameCompleteScreen();
-              }
-            }
-          }
-        }
-      }
-    }
-
-    function draw() {
-      if (paused) {
-        ctx.font = `bold ${Math.max(24, canvas.height * 0.06)}px "Comic Sans MS", cursive, sans-serif`;
-        ctx.fillStyle = "white";
-        ctx.fillText("Paused", canvas.width / 2 - 50, canvas.height / 2);
-        animationFrameId = requestAnimationFrame(draw);
-        return;
-      }
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      drawBricks();
-      drawBall();
-      drawPaddle();
-      drawScore();
-      drawLives();
-      collisionDetection();
-
-      // Bounce off walls
-      if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
-        dx = -dx;
-      }
-      if (y + dy < ballRadius) {
-        dy = -dy;
-      } else if (y + dy > canvas.height - ballRadius * 2 - paddleHeight * 2) {
-        // Check paddle collision
-        if (x > paddleX && x < paddleX + paddleWidth) {
-          dy = -dy;
-          // Increase speed slightly on paddle hit
-          dx *= 1.05;
-          dy *= 1.05;
-        } else if (y + dy > canvas.height - ballRadius) {
-          // Missed paddle, lose life
-          lives--;
-          if (lives <= 0) {
-            showRewardScreen();
-          } else {
-            resetBallAndPaddle();
-          }
-        }
-      }
-
-      // Move paddle
-      if (rightPressed && paddleX < canvas.width - paddleWidth) {
-        paddleX += Math.max(8, canvas.width * 0.013);
-      } else if (leftPressed && paddleX > 0) {
-        paddleX -= Math.max(8, canvas.width * 0.013);
-      }
-
-      x += dx;
-      y += dy;
-
-      animationFrameId = requestAnimationFrame(draw);
-    }
-
-    function resetBallAndPaddle() {
-      x = canvas.width / 2;
-      y = canvas.height - paddleHeight * 3 - ballRadius * 2;
-      dx = (Math.random() > 0.5 ? 1 : -1) * (Math.max(3, canvas.width * 0.006));
-      dy = -Math.max(3, canvas.height * 0.006);
-      paddleX = (canvas.width - paddleWidth) / 2;
-      trail = [];
-    }
-
-    function showHomeScreen() {
-      pauseGame();
-      canvas.style.display = "none";
-      document.getElementById("homeScreen").style.display = "flex";
-      document.getElementById("instructionScreen").style.display = "none";
-      document.getElementById("gameOverScreen").style.display = "none";
-      document.getElementById("rewardedScreen").style.display = "none";
-      document.getElementById("gameCompleteScreen").style.display = "none";
-      gameMusic.pause();
-      rewardUsed = false;
-    }
-
-    function showInstructionScreen() {
-      pauseGame();
-      canvas.style.display = "none";
-      document.getElementById("homeScreen").style.display = "none";
-      document.getElementById("instructionScreen").style.display = "flex";
-      document.getElementById("gameOverScreen").style.display = "none";
-      document.getElementById("rewardedScreen").style.display = "none";
-      document.getElementById("gameCompleteScreen").style.display = "none";
-      gameMusic.pause();
-    }
-
-    function startGame() {
-      score = 0;
-      lives = 3;
-      paused = false;
-      initBricks();
-      resizeCanvas();
-      resetBallAndPaddle();
-      canvas.style.display = "block";
-      document.getElementById("homeScreen").style.display = "none";
-      document.getElementById("instructionScreen").style.display = "none";
-      document.getElementById("gameOverScreen").style.display = "none";
-      document.getElementById("rewardedScreen").style.display = "none";
-      document.getElementById("gameCompleteScreen").style.display = "none";
-      gameMusic.play();
-      draw();
-    }
-
-    function showGameOverScreen() {
-      pauseGame();
-      canvas.style.display = "none";
-      document.getElementById("gameOverScreen").style.display = "flex";
-      document.getElementById("homeScreen").style.display = "none";
-      document.getElementById("instructionScreen").style.display = "none";
-      document.getElementById("rewardedScreen").style.display = "none";
-      document.getElementById("gameCompleteScreen").style.display = "none";
-      gameMusic.pause();
-    }
-
-    function showRewardScreen() {
-      pauseGame();
-      canvas.style.display = "none";
-      document.getElementById("rewardedScreen").style.display = "flex";
-      document.getElementById("gameOverScreen").style.display = "none";
-      document.getElementById("homeScreen").style.display = "none";
-      document.getElementById("instructionScreen").style.display = "none";
-      document.getElementById("gameCompleteScreen").style.display = "none";
-      gameMusic.pause();
-      startCountdown();
-    }
-
-    function showGameCompleteScreen() {
-      pauseGame();
-      canvas.style.display = "none";
-      document.getElementById("gameCompleteScreen").style.display = "flex";
-      document.getElementById("gameOverScreen").style.display = "none";
-      document.getElementById("homeScreen").style.display = "none";
-      document.getElementById("instructionScreen").style.display = "none";
-      document.getElementById("rewardedScreen").style.display = "none";
-      gameMusic.pause();
-    }
-
-    function goToHome() {
-      showHomeScreen();
-    }
-
-    function pauseGame() {
-      paused = true;
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    }
-
-    function startCountdown() {
-      let timeLeft = 5;
-      const timerEl = document.getElementById("countdownTimer");
-      timerEl.textContent = timeLeft;
-      countdownInterval = setInterval(() => {
-        timeLeft--;
-        timerEl.textContent = timeLeft;
-        if (timeLeft <= 0) {
-          clearInterval(countdownInterval);
-          showGameOverScreen();
-        }
-      }, 1000);
-    }
-
-    function RewardMJ() {
-      clearInterval(countdownInterval);
-      lives = 1; // extra life granted
-      canvas.style.display = "block";
-      document.getElementById("rewardedScreen").style.display = "none";
-      paused = false;
-      resetBallAndPaddle();
-      draw();
-      gameMusic.play();
-    }
-
-    // On window resize adjust canvas size and reposition paddle and bricks
-    window.addEventListener("resize", () => {
-      resizeCanvas();
-      resetBallAndPaddle();
-      if (!paused && canvas.style.display === "block") {
-        draw();
-      }
-    });
-
-    // Load heart image then show home screen
-    heartImg.onload = () => {
-      showHomeScreen();
+  function setupGame() {
+    paddle = {
+      width: width * paddleWidthRatio,
+      height: height * 0.02,
+      x: width / 2 - (width * paddleWidthRatio) / 2,
+      y: height - 40,
+      speed: width * 0.01
     };
-  </script>
+
+    ball = {
+      x: width / 2,
+      y: height / 2,
+      radius: 10,
+      dx: 4,
+      dy: -4
+    };
+
+    bricks = [];
+    let brickWidth = width / cols;
+    let brickHeight = height * 0.05;
+
+    for (let r = 0; r < rows; r++) {
+      bricks[r] = [];
+      for (let c = 0; c < cols; c++) {
+        bricks[r][c] = { x: c * brickWidth, y: r * brickHeight + 30, status: 1 };
+      }
+    }
+  }
+
+  function drawPaddle() {
+    ctx.fillStyle = "#0f0";
+    ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+  }
+
+  function drawBall() {
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+    ctx.fillStyle = "#0ff";
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  function drawBricks() {
+    ctx.fillStyle = "#f00";
+    bricks.forEach(row => {
+      row.forEach(brick => {
+        if (brick.status) {
+          ctx.fillRect(brick.x, brick.y, width / cols - 2, height * 0.05 - 2);
+        }
+      });
+    });
+  }
+
+  function collisionDetection() {
+    bricks.forEach(row => {
+      row.forEach(brick => {
+        if (brick.status) {
+          if (
+            ball.x > brick.x &&
+            ball.x < brick.x + width / cols &&
+            ball.y > brick.y &&
+            ball.y < brick.y + height * 0.05
+          ) {
+            ball.dy *= -1;
+            brick.status = 0;
+          }
+        }
+      });
+    });
+  }
+
+  function update() {
+    // Paddle movement via keys
+    if (keys.left) {
+      paddle.x -= paddle.speed;
+    }
+    if (keys.right) {
+      paddle.x += paddle.speed;
+    }
+
+    // Prevent paddle from going out of bounds
+    if (paddle.x < 0) paddle.x = 0;
+    if (paddle.x + paddle.width > width) paddle.x = width - paddle.width;
+
+    // Ball movement
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+
+    // Wall collision
+    if (ball.x + ball.radius > width || ball.x - ball.radius < 0) ball.dx *= -1;
+    if (ball.y - ball.radius < 0) ball.dy *= -1;
+    if (ball.y + ball.radius > height) setupGame(); // Reset on bottom hit
+
+    // Paddle collision
+    if (
+      ball.y + ball.radius > paddle.y &&
+      ball.x > paddle.x &&
+      ball.x < paddle.x + paddle.width
+    ) {
+      ball.dy *= -1;
+      ball.y = paddle.y - ball.radius;
+    }
+
+    collisionDetection();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+    drawPaddle();
+    drawBall();
+    drawBricks();
+  }
+
+  function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+  }
+
+  // Paddle movement handlers
+  function movePaddle(x) {
+    paddle.x = x - paddle.width / 2;
+    if (paddle.x < 0) paddle.x = 0;
+    if (paddle.x + paddle.width > width) paddle.x = width - paddle.width;
+  }
+
+  canvas.addEventListener("mousemove", (e) => movePaddle(e.clientX));
+  canvas.addEventListener("touchmove", (e) => {
+    if (e.touches.length > 0) movePaddle(e.touches[0].clientX);
+  });
+
+  // Keyboard input
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") keys.left = true;
+    if (e.key === "ArrowRight") keys.right = true;
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (e.key === "ArrowLeft") keys.left = false;
+    if (e.key === "ArrowRight") keys.right = false;
+  });
+
+  window.addEventListener("resize", resizeCanvas);
+
+  // Start game
+  resizeCanvas();
+  gameLoop();
+</script>
 </body>
 </html>
