@@ -14,20 +14,17 @@
       body {
         margin: 0;
         padding: 0;
-        background: #000;
-        font-family: "Comic Sans MS", cursive, sans-serif;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
         overflow: hidden;
-        color: #fff;
       }
 
       canvas {
-        background: rgba(0, 0, 0, 0.4);
+        background: rgba(0, 0, 0, 0.5);
         border: 1px solid black;
-        border-radius: 15px;
+        border-radius: 20px;
         box-shadow: 0 0 100px white;
       }
 
@@ -41,7 +38,7 @@
         align-items: center;
         text-align: center;
         color: black;
-        padding: 40px 60px;
+        padding: 20px 20px;
         border-radius: 20px;
         width: 90%;
         max-width: 800px;
@@ -51,20 +48,20 @@
       }
 
       .home-screen h1 {
-        font-size: 80px;
+        font-size: 60px;
         margin-bottom: 40px;
       }
 
       .instruction-screen h1,
       .game-over-screen h1 {
         font-size: 60px;
-        margin-bottom: 40px;
+        margin-bottom: 20px;
       }
 
       .home-screen button,
       .instruction-screen button,
       .game-over-screen button {
-        font-size: 22px;
+        font-size: 18px;
         padding: 12px 28px;
         margin-top: 20px;
         background-color: #000;
@@ -76,13 +73,6 @@
         transition: background-color 0.3s ease, transform 0.2s ease;
       }
 
-      .home-screen button:hover,
-      .instruction-screen button:hover,
-      .game-over-screen button:hover {
-        background-color: #333;
-        transform: scale(1.05);
-      }
-
       .instruction-screen p {
         font-size: 20px;
         margin: 10px 0;
@@ -90,19 +80,19 @@
         max-width: 600px;
       }
 
-      .neon-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: white;
-        background-size: 400% 400%;
-        animation: neonBackground 5s ease infinite;
-        z-index: -1;
-      }
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('Background.jpg'); /* 🔁 Replace with your image path */
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+}
 
-      @keyframes neonBackground {
+      @keyframes Background {
         0% {
           background-position: 0% 50%;
         }
@@ -119,8 +109,8 @@
   </head>
 
   <body>
-    <div class="neon-background"></div>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div class="background"></div>
+    <canvas id="gameCanvas" width="800" height="350"></canvas>
 
     <!-- Screens -->
     <div id="homeScreen" class="home-screen">
@@ -135,7 +125,7 @@
       <h1>How to Play</h1>
       <p>Use the LEFT and RIGHT arrow keys to move the paddle.</p>
       <p>Press DOWN arrow key to Pause</p>
-      <p>Press ENTER to start the game</p>
+      <p>Press ENTER to start the game OR click on PLAY GAME</p>
       <button onclick="startGame()">PLAY GAME</button>
       <!-- ✅ New button -->
     </div>
@@ -174,8 +164,8 @@
       let brickRowCount = 5;
       let brickColumnCount = 8;
       let brickWidth = (canvas.width - 80) / brickColumnCount;
-      let brickHeight = 25;
-      let brickPadding = 10;
+      let brickHeight = 15;
+      let brickPadding = 5;
       let brickOffsetTop = 50;
       let bricks = [];
       let score;
