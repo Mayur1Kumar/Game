@@ -129,16 +129,13 @@
       <h1>Brick Breaker</h1>
       <button onclick="showInstructionScreen()">START</button>
     </div>
-    <div
-      id="instructionScreen"
-      class="instruction-screen"
-      style="display: none"
-    >
-      <h1>How to Play</h1>
-      <p>Use the LEFT and RIGHT arrow keys to move the paddle.</p>
-      <p>Press DOWN arrow key to Pause</p>
-      <p>Press ENTER to start the game</p>
-    </div>
+<div id="instructionScreen" class="instruction-screen" style="display: none">
+  <h1>How to Play</h1>
+  <p>Use the LEFT and RIGHT arrow keys to move the paddle.</p>
+  <p>Press DOWN arrow key to Pause</p>
+  <p>Press ENTER to start the game</p>
+  <button onclick="startGame()">PLAY GAME</button> <!-- ✅ New button -->
+</div>
     <div id="gameOverScreen" class="game-over-screen" style="display: none">
       <h1>Game Over</h1>
       <button onclick="goToHome()">HOME</button>
@@ -633,6 +630,28 @@ function RewardMJ() {
       }
 
       showHomeScreen();
+
+      // Touch control
+canvas.addEventListener("touchstart", handleTouchMove, false);
+canvas.addEventListener("touchmove", handleTouchMove, false);
+
+function handleTouchMove(e) {
+  e.preventDefault();
+  if (e.touches.length > 0) {
+    const touchX = e.touches[0].clientX;
+    const rect = canvas.getBoundingClientRect();
+    const relativeX = touchX - rect.left;
+
+    // Update paddleX so that the paddle's center follows the finger
+    paddleX = relativeX - paddleWidth / 2;
+
+    // Clamp paddle within canvas bounds
+    if (paddleX < 0) paddleX = 0;
+    if (paddleX + paddleWidth > canvas.width)
+      paddleX = canvas.width - paddleWidth;
+  }
+}
+
     </script>
   </body>
 </html>
