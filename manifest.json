@@ -14,9 +14,9 @@
   },
   "ad_config": {
     "android": {
-      "package_name": "com.jiogames.testdesktop",
-      "interstitial": "3l7i2f1v",
-      "rewarded": "zy91e0oc",
+      "package_name": "com.ZomobGames.TurboEscapeSP",
+      "interstitial": "f3elozdu",
+      "rewarded": "ebd4cqus",
       "banner": "sdsfdft32"
     },
     "ios": {
