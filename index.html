@@ -444,14 +444,17 @@
           },
         });
 
-        window.JioGames?.cacheAd(AdType.Rewarded, {
-          onAdPrepared: function () {
-            console.log("index : Rewarded Ad prepared successfully.");
-          },
-          onAdFailedToLoad: function (error) {
-            console.log("index : Failed to load Rewarded Ad: " + error);
-          },
-        });
+        setTimeout(function () {
+          window.JioGames?.cacheAd(AdType.Rewarded, {
+            onAdPrepared: function () {
+              console.log("index : Rewarded Ad prepared successfully.");
+            },
+            onAdFailedToLoad: function (error) {
+              console.log("index : Failed to load Rewarded Ad: " + error);
+            },
+          });
+
+        }, 5000);
 
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
 
