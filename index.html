@@ -7,7 +7,7 @@
     <script
       async
       src="https://jiogames.akamaized.net/gameSDK/jiogames/stable/v2.0/jiogames_sdk.js"
-      data-jg-test-environment="on"
+      data-jg-test-environment="off"
     ></script>
 
     <style>
@@ -500,7 +500,7 @@
 
       function showGameOver() {
         window.JioGames?.postScore(score);
-
+        console.log("JioGames Game Over");
         window.JioGames?.showAd(AdType.Interstitial, {
           onAdClosed: function () {
             console.log("index : Interstitial Ad closed.");
@@ -590,7 +590,7 @@
 
       function showGameCompleteScreen() {
         window.JioGames?.postScore(score);
-
+        console.log("JioGames Complete");
         window.JioGames?.showAd(AdType.Interstitial, {
           onAdClosed: function () {
             console.log("index : Interstitial Ad closed.");
