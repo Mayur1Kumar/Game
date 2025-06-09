@@ -9,7 +9,6 @@
       src="https://jiogames.akamaized.net/gameSDK/jiogames/stable/v2.0/jiogames_sdk.js"
       data-jg-test-environment="off"
     ></script>
-
     <style>
       body {
         margin: 0;
@@ -48,11 +47,7 @@
         transform: translate(-50%, -50%);
       }
 
-      .home-screen h1 {
-        font-size: 60px;
-        margin-bottom: 40px;
-      }
-
+      .home-screen h1,
       .instruction-screen h1,
       .game-over-screen h1 {
         font-size: 60px;
@@ -81,17 +76,17 @@
         max-width: 600px;
       }
 
-.background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('Back.jpg'); /* 🔁 Replace with your image path */
-  background-size: cover;
-  background-position: center;
-  z-index: -1;
-}
+      .background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('Back.jpg'); /* Replace with your image path */
+        background-size: cover;
+        background-position: center;
+        z-index: -1;
+      }
 
       @keyframes Background {
         0% {
@@ -108,7 +103,6 @@
       }
     </style>
   </head>
-
   <body>
     <div class="background"></div>
     <canvas id="gameCanvas" width="800" height="350"></canvas>
@@ -118,17 +112,12 @@
       <h1>Brick Breaker</h1>
       <button onclick="showInstructionScreen()">START</button>
     </div>
-    <div
-      id="instructionScreen"
-      class="instruction-screen"
-      style="display: none"
-    >
+    <div id="instructionScreen" class="instruction-screen" style="display: none">
       <h1>How to Play</h1>
-      <p>Use the LEFT and RIGHT arrow keys to move the paddle.</p>
-      <p>Press DOWN arrow key to Pause</p>
+      <p>Use ← and → arrow keys to move the paddle.</p>
+      <p>Press ↓ arrow key OR Double tap anywhere to pause/resume</p>
       <p>Press ENTER to start the game OR click on PLAY GAME</p>
       <button onclick="startGame()">PLAY GAME</button>
-      <!-- ✅ New button -->
     </div>
     <div id="gameOverScreen" class="game-over-screen" style="display: none">
       <h1>Game Over</h1>
@@ -146,7 +135,6 @@
       <button onclick="goToHome()">HOME</button>
     </div>
 
-    <!-- Audio -->
     <audio id="gameMusic" loop>
       <source src="sound.mp3" type="audio/mp3" />
     </audio>
@@ -630,6 +618,7 @@
       canvas.addEventListener("touchstart", handleTouchMove, false);
       canvas.addEventListener("touchmove", handleTouchMove, false);
 
+      // Keep this in your code
       function handleTouchMove(e) {
         e.preventDefault();
         if (e.touches.length > 0) {
@@ -637,15 +626,48 @@
           const rect = canvas.getBoundingClientRect();
           const relativeX = touchX - rect.left;
 
-          // Update paddleX so that the paddle's center follows the finger
           paddleX = relativeX - paddleWidth / 2;
 
-          // Clamp paddle within canvas bounds
           if (paddleX < 0) paddleX = 0;
           if (paddleX + paddleWidth > canvas.width)
             paddleX = canvas.width - paddleWidth;
         }
       }
+
+      // ✅ Add double-tap detection for pause/resume
+      let lastTap = 0;
+
+      canvas.addEventListener("touchend", function (e) {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+
+        if (tapLength < 300 && tapLength > 0) {
+          paused = !paused;
+        }
+
+        lastTap = currentTime;
+      });
+
+      // ✅ Update drawPausedText to show double tap message
+      function drawPausedText() {
+        ctx.font = "48px Comic Sans MS";
+        ctx.fillStyle = "white";
+        ctx.fillText(
+          "PAUSED",
+          canvas.width / 2 - ctx.measureText("PAUSED").width / 2,
+          canvas.height / 2
+        );
+        ctx.font = "24px Comic Sans MS";
+        ctx.fillText(
+          "Double Tap to Resume",
+          canvas.width / 2 -
+            ctx.measureText("Double Tap to Resume").width / 2,
+          canvas.height / 2 + 40
+        );
+      }
+
+      // ✅ Initialize the game
+      showHomeScreen();
     </script>
   </body>
 </html>
