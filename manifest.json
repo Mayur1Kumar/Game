@@ -14,30 +14,25 @@
   },
   "ad_config": {
     "android": {
-      "package_name": "com.ZomobGames.TurboEscapeSP",
       "interstitial": "f3elozdu",
       "rewarded": "ebd4cqus",
-      "banner": "sdsfdft32"
+      "banner": ""
     },
     "ios": {
-      "package_name": "com.vendorname.gamenameIOS",
       "interstitial": "3l7i2f1v",
       "rewarded": "zy91e0oc",
-      "banner": "sdsfdft32"
+      "banner": ""
     },
     "stb": {
-      "package_name": "com.jiogames.testjgstb",
       "interstitial": "5uz8knyc",
       "rewarded": "ac8wi2jg"
     },
     "msite": {
-      "package_name": "com.vendorname.gamenameMSITE",
       "interstitial": "3l7i2f1v",
       "rewarded": "zy91e0oc",
-      "banner": "sdsfdft32"
+      "banner": ""
     },
     "desktop": {
-      "package_name": "com.vendorname.gamenameDESKTOP",
       "interstitial": "3l7i2f1v",
       "rewarded": "zy91e0oc"
     }
